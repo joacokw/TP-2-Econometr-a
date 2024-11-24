@@ -486,25 +486,35 @@ inflacion_anual <- ipc2024 %>%
 print(inflacion_anual)
 
 
+# Calculamos la inflación anual 
+inflacion_anual <- ipc2024 %>%
+  group_by(anio) %>%
+  summarise(inflacion_anual = prod(1 + var / 100) - 1) %>% 
+  mutate(inflacion_anual = inflacion_anual * 100)         
+print(inflacion_anual)
+
+
 #Finalmente graficamos
 inflacion_anual <- inflacion_anual %>%
-  mutate(anio = anio + 1) %>%    
-  filter(!is.na(inflacion_anual)) 
+  mutate(anio = anio ) %>%    
+  filter(!is.na(inflacion_anual))  %>%
+  mutate(color = ifelse(anio == 2024, "2024", "otros"))
 
-ggplot(inflacion_anual, aes(x = anio, y = inflacion_anual, group = 1)) +
-  geom_line(linewidth = 0.75, color = "blue") +
-  geom_vline(xintercept = 2024, linetype = "dashed", color = "darkred", linewidth = 0.75) +
-  labs(title = "Evolución IPC (2024 proyectado)", 
+ggplot(inflacion_anual, aes(x = anio, y = inflacion_anual, fill = color)) +
+  geom_bar(stat = "identity")  +
+  labs(title = "Evolución inflación anual (2024 proyectado)", 
        x = "", 
        y = "Porcentaje") +
-       scale_x_continuous(breaks = seq(min(inflacion_anual$anio), max(inflacion_anual$anio), by = 1)) +
+  scale_x_continuous(breaks = seq(min(inflacion_anual$anio), max(inflacion_anual$anio), by = 1)) +
+  scale_fill_manual(values = c("2024" = "darkred", "otros" = "steelblue")) + 
   theme_minimal(base_size = 15) +
   theme(
     plot.title = element_text(hjust = 0.5, face = "bold"),
     axis.title = element_text(face = "bold"),
     axis.text = element_text(color = "gray20"),
     panel.grid.major = element_line(color = "gray80"),
-    panel.grid.minor = element_blank()
+    panel.grid.minor = element_blank(),
+    legend.position = "none"
   )
 
 
